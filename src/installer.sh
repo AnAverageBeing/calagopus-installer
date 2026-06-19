@@ -195,17 +195,17 @@ _install_with_telemetry() {
 _install_show_summary() {
 	local target="$1"
 	ui_title "Installation Summary"
-	printf '  Deploy mode:   %s\n' "${CALAGOPUS_DEPLOY_MODE:-?}"
-	printf '  Target:        %s\n' "$target"
-	printf '  Channel:       %s\n' "${CALAGOPUS_RELEASE_CHANNEL:-?}"
-	printf '  OS:            %s %s (%s)\n' "${OS_ID:-?}" "${OS_VERSION_ID:-?}" "$(system_arch)"
+	printf '  %sDeploy mode%s   %s\n' "$C_GREY" "$C_RESET" "${CALAGOPUS_DEPLOY_MODE:-?}"
+	printf '  %sTarget%s        %s\n' "$C_GREY" "$C_RESET" "$target"
+	printf '  %sChannel%s       %s\n' "$C_GREY" "$C_RESET" "${CALAGOPUS_RELEASE_CHANNEL:-?}"
+	printf '  %sOS%s            %s %s (%s)\n' "$C_GREY" "$C_RESET" "${OS_ID:-?}" "${OS_VERSION_ID:-?}" "$(system_arch)"
 	if [ -n "${CFG[PANEL_FQDN]:-}" ]; then
-		printf '  Panel FQDN:    %s\n' "${CFG[PANEL_FQDN]}"
+		printf '  %sPanel FQDN%s    %s\n' "$C_GREY" "$C_RESET" "${CFG[PANEL_FQDN]}"
 	fi
 	if [ -n "${CFG[DB_HOST]:-}" ]; then
-		printf '  Database:      %s@%s:%s/%s\n' "${CFG[DB_USER]:-?}" "${CFG[DB_HOST]}" "${CFG[DB_PORT]:-5432}" "${CFG[DB_NAME]:-?}"
+		printf '  %sDatabase%s      %s@%s:%s/%s\n' "$C_GREY" "$C_RESET" "${CFG[DB_USER]:-?}" "${CFG[DB_HOST]}" "${CFG[DB_PORT]:-5432}" "${CFG[DB_NAME]:-?}"
 	fi
-	printf '  Telemetry:     %s\n' "${CALAGOPUS_TELEMETRY_OPT_IN:-not asked}"
+	printf '  %sTelemetry%s     %s\n' "$C_GREY" "$C_RESET" "${CALAGOPUS_TELEMETRY_OPT_IN:-not asked}"
 	printf '\n'
 }
 
