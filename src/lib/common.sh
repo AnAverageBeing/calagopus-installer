@@ -60,22 +60,23 @@ declare -gA CALAGOPUS_COMPOSE_FILES=(
 
 # -----------------------------------------------------------------------------
 # Filesystem layout (where the installer puts things)
+# Defaults use :? to respect pre-set values (e.g. from test harnesses).
 # -----------------------------------------------------------------------------
-CALAGOPUS_ETC_DIR="/etc/calagopus"            # panel .env + installer state
-CALAGOPUS_INSTALL_DIR="/var/lib/calagopus"     # binaries / app data root
-CALAGOPUS_PANEL_DIR="${CALAGOPUS_INSTALL_DIR}/panel"
-CALAGOPUS_WINGS_DIR="${CALAGOPUS_INSTALL_DIR}/wings"
-CALAGOPUS_LOG_DIR="/var/log/calagopus"
-CALAGOPUS_BACKUP_DIR="/var/backups/calagopus"
-CALAGOPUS_LIB_DIR="/var/lib/calagopus-installer"  # installed CLI + state
-CALAGOPUS_STATE_FILE="${CALAGOPUS_LIB_DIR}/state.env"
-CALAGOPUS_CONFIG_FILE="${CALAGOPUS_ETC_DIR}/installer.env"
-CALAGOPUS_PANEL_ENV="${CALAGOPUS_ETC_DIR}/panel.env"
-CALAGOPUS_PANEL_BIN="/usr/local/bin/calagopus-panel"
-CALAGOPUS_WINGS_BIN="/usr/local/bin/wings"
-CALAGOPUS_PANEL_SERVICE="calagopus-panel"
-CALAGOPUS_WINGS_SERVICE="wings"
-CALAGOPUS_CLI_BIN="/usr/local/bin/calagopus-installer"
+CALAGOPUS_ETC_DIR="${CALAGOPUS_ETC_DIR:-/etc/calagopus}"
+CALAGOPUS_INSTALL_DIR="${CALAGOPUS_INSTALL_DIR:-/var/lib/calagopus}"
+CALAGOPUS_PANEL_DIR="${CALAGOPUS_PANEL_DIR:-${CALAGOPUS_INSTALL_DIR}/panel}"
+CALAGOPUS_WINGS_DIR="${CALAGOPUS_WINGS_DIR:-${CALAGOPUS_INSTALL_DIR}/wings}"
+CALAGOPUS_LOG_DIR="${CALAGOPUS_LOG_DIR:-/var/log/calagopus}"
+CALAGOPUS_BACKUP_DIR="${CALAGOPUS_BACKUP_DIR:-/var/backups/calagopus}"
+CALAGOPUS_LIB_DIR="${CALAGOPUS_LIB_DIR:-/var/lib/calagopus-installer}"
+CALAGOPUS_STATE_FILE="${CALAGOPUS_STATE_FILE:-${CALAGOPUS_LIB_DIR}/state.env}"
+CALAGOPUS_CONFIG_FILE="${CALAGOPUS_CONFIG_FILE:-${CALAGOPUS_ETC_DIR}/installer.env}"
+CALAGOPUS_PANEL_ENV="${CALAGOPUS_PANEL_ENV:-${CALAGOPUS_ETC_DIR}/panel.env}"
+CALAGOPUS_PANEL_BIN="${CALAGOPUS_PANEL_BIN:-/usr/local/bin/calagopus-panel}"
+CALAGOPUS_WINGS_BIN="${CALAGOPUS_WINGS_BIN:-/usr/local/bin/wings}"
+CALAGOPUS_PANEL_SERVICE="${CALAGOPUS_PANEL_SERVICE:-calagopus-panel}"
+CALAGOPUS_WINGS_SERVICE="${CALAGOPUS_WINGS_SERVICE:-wings}"
+CALAGOPUS_CLI_BIN="${CALAGOPUS_CLI_BIN:-/usr/local/bin/calagopus-installer}"
 
 # Default network ports (overridable via config).
 declare -gA CALAGOPUS_PORTS=(
@@ -88,19 +89,20 @@ declare -gA CALAGOPUS_PORTS=(
 
 # -----------------------------------------------------------------------------
 # Runtime behaviour flags (set by arg parser in src/installer.sh)
+# All use :- so environment / test harness can pre-set them.
 # -----------------------------------------------------------------------------
-CALAGOPUS_INTERACTIVE=1          # 1 = prompt, 0 = use defaults/flags (non-interactive)
-CALAGOPUS_VERBOSE=0
-CALAGOPUS_QUIET=0
-CALAGOPUS_DEBUG=0
-CALAGOPUS_DRY_RUN=0
-CALAGOPUS_ASSUME_YES=0
-CALAGOPUS_NO_COLOR=0
-CALAGOPUS_RELEASE_CHANNEL="stable"   # stable | beta | nightly
-CALAGOPUS_DEPLOY_MODE="docker"       # docker | native
-CALAGOPUS_ACTION=""                  # install | upgrade | repair | backup | restore | reconfigure | remove | status | doctor | logs
-CALAGOPUS_INSTALL_TARGET=""          # panel | wings | full
-CALAGOPUS_LOGFILE="${CALAGOPUS_LOG_DIR}/installer.log"
+CALAGOPUS_INTERACTIVE="${CALAGOPUS_INTERACTIVE:-1}"
+CALAGOPUS_VERBOSE="${CALAGOPUS_VERBOSE:-0}"
+CALAGOPUS_QUIET="${CALAGOPUS_QUIET:-0}"
+CALAGOPUS_DEBUG="${CALAGOPUS_DEBUG:-0}"
+CALAGOPUS_DRY_RUN="${CALAGOPUS_DRY_RUN:-0}"
+CALAGOPUS_ASSUME_YES="${CALAGOPUS_ASSUME_YES:-0}"
+CALAGOPUS_NO_COLOR="${CALAGOPUS_NO_COLOR:-0}"
+CALAGOPUS_RELEASE_CHANNEL="${CALAGOPUS_RELEASE_CHANNEL:-stable}"
+CALAGOPUS_DEPLOY_MODE="${CALAGOPUS_DEPLOY_MODE:-docker}"
+CALAGOPUS_ACTION="${CALAGOPUS_ACTION:-}"
+CALAGOPUS_INSTALL_TARGET="${CALAGOPUS_INSTALL_TARGET:-}"
+CALAGOPUS_LOGFILE="${CALAGOPUS_LOGFILE:-${CALAGOPUS_LOG_DIR}/installer.log}"
 
 # Runtime config associative array - the shared "what did the user pick?" bag.
 # Modules read/write this; config.sh persists/loads it.
