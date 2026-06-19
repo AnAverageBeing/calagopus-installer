@@ -40,7 +40,7 @@ fi
 
 # Thematic wrappers (so modules don't hardcode raw colour codes).
 ui_brand()    { printf '%s%s%s%s' "$C_BOLD" "$C_CYAN" "$1" "$C_RESET"; }
-ui_title()    { printf '\n %s%s%s%s\n' "$C_BOLD" "$C_CYAN" "$1" "$C_RESET"; }
+ui_title()    { printf '\n %s%s%s%s\n' "$C_BOLD" "$C_CYAN" "$1" "$C_RESET" >&2; }
 ui_step()     { printf ' %s>%s %s\n' "$C_CYAN" "$C_RESET" "$1"; }
 ui_ok()       { printf ' %s%s %s%s\n' "$C_GREEN" "✓" "$1" "$C_RESET"; }
 ui_warn()     { printf ' %s%s %s%s\n' "$C_YELLOW" "⚠" "$1" "$C_RESET"; }
