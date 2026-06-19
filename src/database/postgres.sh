@@ -55,6 +55,13 @@ db_choose_source() {
 # the user did not supply one. Populates CFG[DB_*] and CFG[DATABASE_URL].
 # ----------------------------------------------------------------------------
 db_gather_credentials() {
+	# If we already have DB_NAME + DB_USER + POSTGRES_PASSWORD, don't re-prompt.
+	if [ -n "${CFG[DB_NAME]:-}" ] && [ -n "${CFG[DB_USER]:-}" ] && [ -n "${CFG[POSTGRES_PASSWORD]:-}" ]; then
+		log_debug "DB credentials already gathered, skipping prompts"
+		CFG[DATABASE_URL]="$(crypto_pg_url "${CFG[DB_USER]}" "${CFG[POSTGRES_PASSWORD]}" \
+			"${CFG[DB_HOST]}" "${CFG[DB_PORT]}" "${CFG[DB_NAME]}")"
+		return 0
+	fi
 	case "${CFG[DB_REMOTE]:-local}" in
 		local|existing)
 			CFG[DB_HOST]="${CFG[DB_HOST]:-127.0.0.1}"

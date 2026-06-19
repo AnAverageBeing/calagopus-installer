@@ -117,11 +117,18 @@ config_validate() {
 	local fqdn_re='^([a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$'
 
 	# FQDNs only required for panel / proxy with SSL.
+	# Allow 'localhost' and bare hostnames (no dot) for homelab/dev use.
 	if [ -n "${CFG[PANEL_FQDN]:-}" ]; then
-		if ! [[ "${CFG[PANEL_FQDN]}" =~ $fqdn_re ]]; then
-			log_error "PANEL_FQDN '${CFG[PANEL_FQDN]}' is not a valid hostname"
-			errors=$((errors+1))
-		fi
+		case "${CFG[PANEL_FQDN]}" in
+			localhost) ;;  # always valid
+			*)
+				local fqdn_re='^([a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)*[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?$'
+				if ! [[ "${CFG[PANEL_FQDN]}" =~ $fqdn_re ]]; then
+					log_error "PANEL_FQDN '${CFG[PANEL_FQDN]}' is not a valid hostname"
+					errors=$((errors+1))
+				fi
+				;;
+		esac
 	fi
 
 	# Release channel must be one of the known set.
