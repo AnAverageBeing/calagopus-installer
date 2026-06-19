@@ -64,9 +64,9 @@ panel_health() {
 # Gather user inputs that affect either deploy mode (FQDN, port, encryption key)
 # -----------------------------------------------------------------------------
 panel_gather() {
-	# FQDN: needed for SSL/proxy; optional otherwise.
-	if [ -z "${CFG[PANEL_FQDN]:-}" ] && [ "${CALAGOPUS_INTERACTIVE:-1}" -eq 1 ]; then
-		CFG[PANEL_FQDN]="$(ui_prompt_default "Panel FQDN (e.g. panel.example.com; blank to skip)" "")"
+	# FQDN: always ask in interactive mode (show current/stored value as default).
+	if [ "${CALAGOPUS_INTERACTIVE:-1}" -eq 1 ]; then
+		CFG[PANEL_FQDN]="$(ui_prompt_default "Panel FQDN (e.g. panel.example.com; blank to skip)" "${CFG[PANEL_FQDN]:-}")"
 	fi
 	# Port: only ask when NOT using SSL (no FQDN or localhost).
 	# When SSL + reverse proxy is in play, the panel binds to its default
