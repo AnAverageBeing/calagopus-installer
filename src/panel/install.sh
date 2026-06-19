@@ -68,7 +68,12 @@ panel_gather() {
 	if [ -z "${CFG[PANEL_FQDN]:-}" ] && [ "${CALAGOPUS_INTERACTIVE:-1}" -eq 1 ]; then
 		CFG[PANEL_FQDN]="$(ui_prompt_default "Panel FQDN (e.g. panel.example.com; blank to skip)" "")"
 	fi
-	CFG[PANEL_PORT]="${CFG[PANEL_PORT]:-${CALAGOPUS_PORTS[panel_http]}}"
+	# Port: always ask (default 8000).
+	if [ "${CALAGOPUS_INTERACTIVE:-1}" -eq 1 ] && [ -z "${CFG[PANEL_PORT]:-}" ]; then
+		CFG[PANEL_PORT]="$(ui_prompt_default "Panel port" "${CALAGOPUS_PORTS[panel_http]}")"
+	else
+		CFG[PANEL_PORT]="${CFG[PANEL_PORT]:-${CALAGOPUS_PORTS[panel_http]}}"
+	fi
 
 	# Encryption key: generate if missing, never prompt for one (random is safer).
 	if [ -z "${CFG[APP_ENCRYPTION_KEY]:-}" ]; then
@@ -168,11 +173,30 @@ panel_install_native() {
 		log_info "[dry-run] would run: $CALAGOPUS_PANEL_BIN service-install"
 	else
 		"$CALAGOPUS_PANEL_BIN" service-install 2>&1 | tee -a "$CALAGOPUS_LOGFILE" || true
+		# The binary's service-install doesn't add an EnvironmentFile directive.
+		# Patch the service file so it loads our env file.
+		local svc_file="/etc/systemd/system/${CALAGOPUS_PANEL_SERVICE}.service"
+		if [ -f "$svc_file" ] && ! grep -q "EnvironmentFile" "$svc_file"; then
+			log_info "patching systemd service to load env file"
+			system_as_root sed -i "/^\[Service\]/a EnvironmentFile=${CALAGOPUS_PANEL_ENV}" "$svc_file"
+			system_as_root systemctl daemon-reload 2>/dev/null || true
+		fi
 		system_as_root systemctl enable --now "$CALAGOPUS_PANEL_SERVICE" 2>/dev/null || true
 	fi
 
 	CFG[INSTALLED_PANEL_MODE]="native"
 	config_mark_installed PANEL
+
+	# SSL + reverse proxy (only if FQDN is set).
+	if [ -n "${CFG[PANEL_FQDN]:-}" ] && [ "${CFG[PANEL_FQDN]}" != "localhost" ]; then
+		# Ask if user wants SSL + reverse proxy.
+		if ui_confirm "Set up SSL and reverse proxy (Nginx)?" "y"; then
+			ssl_provision 2>/dev/null || log_warn "SSL setup had issues"
+			proxy_setup 2>/dev/null || log_warn "reverse proxy setup had issues"
+		fi
+	else
+		log_info "no FQDN set - skipping SSL and reverse proxy (panel will be on plain HTTP)"
+	fi
 
 	# Post-install summary.
 	ui_title "Panel Installation Complete"
