@@ -54,7 +54,7 @@ require_curl() {
 fetch_repo_to_temp() {
 	local archive_url="${GITHUB_ARCHIVE}/${INSTALLER_BRANCH}.tar.gz"
 	local tmp_dir
-	tmp_dir="$(mktemp -d "${TMPDIR:-/tmp}/calagopus-installer.XXXXXX")"
+	tmp_dir="$(mktemp -d "${TMPDIR:-/tmp}/cal-installer.XXXXXX")"
 
 	bootstrap_log "downloading installer from ${archive_url}"
 	if ! curl -fsSL "$archive_url" -o "${tmp_dir}/repo.tar.gz"; then
