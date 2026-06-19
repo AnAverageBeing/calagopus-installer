@@ -68,9 +68,19 @@ panel_gather() {
 	if [ -z "${CFG[PANEL_FQDN]:-}" ] && [ "${CALAGOPUS_INTERACTIVE:-1}" -eq 1 ]; then
 		CFG[PANEL_FQDN]="$(ui_prompt_default "Panel FQDN (e.g. panel.example.com; blank to skip)" "")"
 	fi
-	# Port: always ask (default 8000).
-	if [ "${CALAGOPUS_INTERACTIVE:-1}" -eq 1 ] && [ -z "${CFG[PANEL_PORT]:-}" ]; then
-		CFG[PANEL_PORT]="$(ui_prompt_default "Panel port" "${CALAGOPUS_PORTS[panel_http]}")"
+	# Port: only ask when NOT using SSL (no FQDN or localhost).
+	# When SSL + reverse proxy is in play, the panel binds to its default
+	# port and the proxy handles 80/443.
+	local has_ssl_fqdn=0
+	if [ -n "${CFG[PANEL_FQDN]:-}" ] && [ "${CFG[PANEL_FQDN]}" != "localhost" ]; then
+		has_ssl_fqdn=1
+	fi
+	if [ "$has_ssl_fqdn" = "0" ]; then
+		if [ "${CALAGOPUS_INTERACTIVE:-1}" -eq 1 ] && [ -z "${CFG[PANEL_PORT]:-}" ]; then
+			CFG[PANEL_PORT]="$(ui_prompt_default "Panel port (this is where the panel will run)" "${CALAGOPUS_PORTS[panel_http]}")"
+		else
+			CFG[PANEL_PORT]="${CFG[PANEL_PORT]:-${CALAGOPUS_PORTS[panel_http]}}"
+		fi
 	else
 		CFG[PANEL_PORT]="${CFG[PANEL_PORT]:-${CALAGOPUS_PORTS[panel_http]}}"
 	fi
