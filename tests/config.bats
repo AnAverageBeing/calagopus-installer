@@ -7,6 +7,7 @@ setup() {
 	export CALAGOPUS_ROOT
 	TMPDIR_TEST="$(mktemp -d)"
 	export TMPDIR_TEST
+	# Override paths BEFORE sourcing so common.sh picks up the sandbox.
 	export CALAGOPUS_ETC_DIR="${TMPDIR_TEST}/etc/calagopus"
 	export CALAGOPUS_LIB_DIR="${TMPDIR_TEST}/var/lib/calagopus-installer"
 	export CALAGOPUS_CONFIG_FILE="${CALAGOPUS_ETC_DIR}/installer.env"

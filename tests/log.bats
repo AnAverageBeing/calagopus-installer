@@ -7,6 +7,7 @@ setup() {
 	export CALAGOPUS_ROOT
 	TMPDIR_TEST="$(mktemp -d)"
 	export TMPDIR_TEST
+	# Override log paths BEFORE sourcing common.sh so it picks up our sandbox.
 	export CALAGOPUS_LOG_DIR="${TMPDIR_TEST}/var/log/calagopus"
 	export CALAGOPUS_LOGFILE="${CALAGOPUS_LOG_DIR}/installer.log"
 	. "${CALAGOPUS_ROOT}/src/lib/common.sh"

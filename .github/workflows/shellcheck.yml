@@ -18,8 +18,12 @@ jobs:
       - name: Run shellcheck
         run: |
           # Collect every shell file in the project and lint it.
+          # SC2034: "appears unused" — false positives in a modular project
+          #   where variables are declared in one file and used in another.
+          # SC1090/SC1091: "can't follow non-constant source" — expected for
+          #   dynamically-sourced module files.
           mapfile -t files < <(find . -type f -name '*.sh' -not -path './.git/*')
-          shellcheck -x "${files[@]}"
+          shellcheck -x -e SC2034,SC1090,SC1091 "${files[@]}"
       - name: Check bash syntax
         run: |
           mapfile -t files < <(find . -type f -name '*.sh' -not -path './.git/*')
