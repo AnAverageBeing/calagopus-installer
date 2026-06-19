@@ -96,7 +96,6 @@ panel_gather() {
 # Docker deployment
 # -----------------------------------------------------------------------------
 panel_install_docker() {
-	panel_gather
 	dep_provision docker
 	docker_configure_daemon
 	docker_ensure_network
@@ -141,7 +140,6 @@ panel_install_docker() {
 # Native (binary) deployment
 # -----------------------------------------------------------------------------
 panel_install_native() {
-	panel_gather
 	# Native needs DB + cache on the host.
 	db_provision
 	dep_provision redis

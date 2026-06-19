@@ -82,7 +82,6 @@ EOF
 # -----------------------------------------------------------------------------
 wings_install_docker() {
 	wings_is_aio_bundled && { log_ok "wings is bundled in the AIO panel container; nothing to do"; return 0; }
-	wings_gather
 	dep_provision docker
 	docker_configure_daemon
 	docker_ensure_network
@@ -106,7 +105,6 @@ wings_install_docker() {
 # -----------------------------------------------------------------------------
 wings_install_native() {
 	wings_is_aio_bundled && { log_ok "wings is bundled in the AIO panel container; nothing to do"; return 0; }
-	wings_gather
 	dep_provision docker   # wings needs a container runtime regardless
 
 	local url; url="$(wings_binary_url)"
