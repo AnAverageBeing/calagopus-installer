@@ -174,20 +174,48 @@ action_install_full() {
 	_install_with_telemetry full
 }
 
-# Shared wrapper: telemetry prompt -> show summary -> confirm -> install -> send telemetry.
+# Shared wrapper: gather input -> telemetry -> summary -> confirm -> install -> send telemetry.
 _install_with_telemetry() {
 	local target="$1"
+
+	# Phase 1: Gather all user input (FQDN, DB creds, encryption key, etc.)
+	# The install functions will see CFG is already populated and skip
+	# re-prompting (idempotent design).
+	case "$target" in
+		panel)
+			panel_gather
+			db_choose_source
+			db_gather_credentials
+			;;
+		wings)
+			wings_gather
+			;;
+		full)
+			panel_gather
+			db_choose_source
+			db_gather_credentials
+			wings_gather
+			;;
+	esac
+
+	# Phase 2: Telemetry opt-in
 	telemetry_prompt
+
+	# Phase 3: Show summary + confirm
 	_install_show_summary "$target"
 	if ! ui_confirm "Proceed with installation?" "y"; then
 		log_info "installation cancelled by user"
 		exit 0
 	fi
+
+	# Phase 4: Execute installation
 	case "$target" in
 		panel) panel_install ;;
 		wings) wings_install ;;
 		full)  panel_install; if ! wings_is_aio_bundled; then wings_install; fi ;;
 	esac
+
+	# Phase 5: Send telemetry
 	telemetry_send
 }
 

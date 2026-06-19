@@ -42,7 +42,12 @@ crypto_rand_string() {
 	esac
 	local out=""
 	if [ -r /dev/urandom ]; then
+		# Temporarily disable pipefail: head -c exits after reading enough
+		# bytes, causing tr to receive SIGPIPE. Under `set -o pipefail`
+		# this triggers ERR. The output is already correct at that point.
+		set +o pipefail
 		out="$(LC_ALL=C tr -dc "$chars" </dev/urandom 2>/dev/null | head -c "$len")"
+		set -o pipefail
 	fi
 	if [ -z "$out" ] || [ "${#out}" -lt "$len" ]; then
 		# fallback using openssl
