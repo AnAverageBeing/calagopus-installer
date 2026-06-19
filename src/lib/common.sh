@@ -21,7 +21,7 @@ CALAGOPUS_LIB_COMMON=1
 CALAGOPUS_INSTALLER_NAME="Calagopus Installer"
 CALAGOPUS_INSTALLER_VERSION="1.0.0"
 CALAGOPUS_INSTALLER_CODENAME="anchor"
-CALAGOPUS_INSTALLER_REPO="https://github.com/calagopus-installer/calagopus-installer"
+CALAGOPUS_INSTALLER_REPO="https://github.com/AnAverageBeing/calagopus-installer"
 
 # Upstream Calagopus references (used for downloads).
 CALAGOPUS_PANEL_REPO="https://github.com/calagopus/panel"

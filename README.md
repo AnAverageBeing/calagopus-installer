@@ -1,10 +1,10 @@
 # calagopus-installer
 
-[![Shellcheck](https://github.com/calagopus-installer/calagopus-installer/actions/workflows/shellcheck.yml/badge.svg)](https://github.com/calagopus-installer/calagopus-installer/actions/workflows/shellcheck.yml)
-[![Tests](https://github.com/calagopus-installer/calagopus-installer/actions/workflows/tests.yml/badge.svg)](https://github.com/calagopus-installer/calagopus-installer/actions/workflows/tests.yml)
+[![Shellcheck](https://github.com/AnAverageBeing/calagopus-installer/actions/workflows/shellcheck.yml/badge.svg)](https://github.com/AnAverageBeing/calagopus-installer/actions/workflows/shellcheck.yml)
+[![Tests](https://github.com/AnAverageBeing/calagopus-installer/actions/workflows/tests.yml/badge.svg)](https://github.com/AnAverageBeing/calagopus-installer/actions/workflows/tests.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![made-with-bash](https://img.shields.io/badge/Made%20with-Bash-1f425f.svg)](https://www.gnu.org/software/bash/)
-[![Release](https://img.shields.io/github/v/release/calagopus-installer/calagopus-installer)](https://github.com/calagopus-installer/calagopus-installer/releases)
+[![Release](https://img.shields.io/github/v/release/AnAverageBeing/calagopus-installer)](https://github.com/AnAverageBeing/calagopus-installer/releases)
 
 Unofficial installation and management scripts for the [Calagopus](https://calagopus.com) Panel & Wings. Works with the latest version of Calagopus!
 
@@ -34,7 +34,7 @@ Inspired by the [pterodactyl-installer](https://github.com/pterodactyl-installer
 
 ## Help and support
 
-For help and support regarding the script itself and **not the official Calagopus project**, please [open an issue](https://github.com/calagopus-installer/calagopus-installer/issues).
+For help and support regarding the script itself and **not the official Calagopus project**, please [open an issue](https://github.com/AnAverageBeing/calagopus-installer/issues).
 
 For Calagopus support, join the [Calagopus Discord](https://discord.gg/uSM8tvTxBV).
 
@@ -100,7 +100,7 @@ List of supported installation setups for Panel and Wings.
 To use the installation scripts, simply run this command as root. The script will show you an interactive menu where you can choose whether to install just the Panel, just Wings, or the Full Stack.
 
 ```bash
-bash <(curl -sSL https://calagopus-installer.se)
+bash <(curl -sSL https://raw.githubusercontent.com/AnAverageBeing/calagopus-installer/main/install.sh)
 ```
 
 > **Note:** On some systems, it's required to be already logged in as root before executing the one-line command (where `sudo` is in front of the command does not work).
@@ -111,17 +111,17 @@ For automation, CI/CD pipelines, or provisioning scripts:
 
 ```bash
 # Full stack Docker install (Panel + Wings AIO)
-bash <(curl -sSL https://calagopus-installer.se) -- \
+bash <(curl -sSL https://raw.githubusercontent.com/AnAverageBeing/calagopus-installer/main/install.sh) -- \
   --non-interactive --yes \
   --action install_full --target full --mode docker --channel stable
 
 # Panel only, native binary
-bash <(curl -sSL https://calagopus-installer.se) -- \
+bash <(curl -sSL https://raw.githubusercontent.com/AnAverageBeing/calagopus-installer/main/install.sh) -- \
   --non-interactive --yes \
   --action install_panel --target panel --mode native --channel stable
 
 # Wings only, Docker
-bash <(curl -sSL https://calagopus-installer.se) -- \
+bash <(curl -sSL https://raw.githubusercontent.com/AnAverageBeing/calagopus-installer/main/install.sh) -- \
   --non-interactive --yes \
   --action install_wings --target wings --mode docker \
   --wings-join-data "your-join-token-here"

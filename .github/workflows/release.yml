@@ -12,13 +12,7 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
-      - name: Build installer.sh release asset
-        run: |
-          # The modular installer is the release asset the bootstrap fetches.
-          cp src/installer.sh installer.sh
-          chmod +x installer.sh
       - name: Create release
         uses: softprops/action-gh-release@v2
         with:
-          files: installer.sh
           generate_release_notes: true
