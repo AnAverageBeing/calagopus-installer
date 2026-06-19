@@ -1,4 +1,4 @@
-# 🦆 calagopus-installer
+# 🐺 calagopus-installer
 
 [![Shellcheck](https://github.com/AnAverageBeing/calagopus-installer/actions/workflows/shellcheck.yml/badge.svg?style=flat-square)](https://github.com/AnAverageBeing/calagopus-installer/actions/workflows/shellcheck.yml)
 [![Tests](https://github.com/AnAverageBeing/calagopus-installer/actions/workflows/tests.yml/badge.svg?style=flat-square)](https://github.com/AnAverageBeing/calagopus-installer/actions/workflows/tests.yml)
