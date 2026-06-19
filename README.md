@@ -9,7 +9,7 @@
 [![GitHub Issues](https://img.shields.io/github/issues/AnAverageBeing/calagopus-installer?style=flat-square)](https://github.com/AnAverageBeing/calagopus-installer/issues)
 [![GitHub Stars](https://img.shields.io/github/stars/AnAverageBeing/calagopus-installer?style=flat-square)](https://github.com/AnAverageBeing/calagopus-installer)
 
-> **Unofficial** installation and management scripts for [Calagopus](https://calagopus.com) Panel & Wings — a modern, Docker-first, ARM-friendly game server panel.
+> **Unofficial** installation and management scripts for [Calagopus](https://calagopus.com) Panel & Wings - a modern, Docker-first, ARM-friendly game server panel.
 
 Inspired by [pterodactyl-installer](https://github.com/pterodactyl-installer/pterodactyl-installer), built specifically for Calagopus' Rust-powered architecture.
 
@@ -23,7 +23,7 @@ Inspired by [pterodactyl-installer](https://github.com/pterodactyl-installer/pte
 bash <(curl -sSL https://raw.githubusercontent.com/AnAverageBeing/calagopus-installer/main/install.sh)
 ```
 
-> ⚠️ **Root required** — Some systems need `sudo` before running this command.
+> ⚠️ **Root required** - Some systems need `sudo` before running this command.
 
 ### One-line non-interactive (automated)
 
@@ -32,9 +32,9 @@ bash <(curl -sSL https://raw.githubusercontent.com/AnAverageBeing/calagopus-inst
 bash <(curl -sSL https://raw.githubusercontent.com/AnAverageBeing/calagopus-installer/main/install.sh) -- \
   --non-interactive --yes --action install_full --target full --mode docker --channel stable
 
-# Panel only (native binary)
+# Panel only (native binary, without Docker)
 bash <(curl -sSL https://raw.githubusercontent.com/AnAverageBeing/calagopus-installer/main/install.sh) -- \
-  --non-interactive --yes --action install_panel --target panel --mode native --channel stable
+  --non-interactive --yes --action install_panel_native --target panel --mode native --channel stable
 
 # Wings only (Docker)
 bash <(curl -sSL https://raw.githubusercontent.com/AnAverageBeing/calagopus-installer/main/install.sh) -- \
@@ -156,21 +156,22 @@ sudo bash src/installer.sh
 
 | # | Action | Description |
 |:--|:-------|:------------|
-| 1 | Install Panel | Deploy Calagopus Panel (Docker/Native) |
-| 2 | Install Wings | Deploy Calagopus Wings node |
-| 3 | Install Full Stack | Panel + Wings on one host (AIO) |
-| 4 | Upgrade Installation | Update to latest release on your channel |
-| 5 | Repair Installation | Auto-detect and fix common issues |
-| 6 | Backup Installation | Create full backup bundle (DB + config) |
-| 7 | Restore Installation | Restore from backup |
-| 8 | Reconfigure Installation | Re-run setup wizard |
-| 9 | Remove Installation | Cleanly uninstall Calagopus |
-| 10 | Show System Status | Health overview |
+| 1 | Install Panel Only (without Docker) | Deploy Calagopus Panel using native binaries + systemd |
+| 2 | Install Panel+Wings (Full Stack) | Panel + Wings on one host via AIO Docker image |
+| 3 | Install Panel Only (Docker) | Deploy Calagopus Panel using Docker Compose |
+| 4 | Install Wings Only | Deploy Calagopus Wings node |
+| 5 | Upgrade Installation | Update to latest release on your channel |
+| 6 | Repair Installation | Auto-detect and fix common issues |
+| 7 | Backup Installation | Create full backup bundle (DB + config) |
+| 8 | Restore Installation | Restore from backup |
+| 9 | Reconfigure Installation | Re-run setup wizard |
+| 10 | Remove Installation | Full clean uninstall (containers, files, configs, optionally DB) |
+| 11 | Show System Status | Health overview |
 
 ### CLI Flags
 
 ```bash
---action <action>           install_panel | install_wings | install_full | upgrade | repair | backup | restore | remove | status
+--action <action>           install_panel_native | install_panel_docker | install_wings | install_full | upgrade | repair | backup | restore | remove | status
 --target <target>           panel | wings | full
 --mode <mode>               docker | native
 --channel <channel>         stable | beta | nightly
@@ -378,22 +379,30 @@ bats tests/
 
 ## 📄 License
 
-[MIT](LICENSE) — see LICENSE file for details.
+[MIT](LICENSE) - see LICENSE file for details.
 
 ---
 
 ## 🙏 Acknowledgements
 
-- [pterodactyl-installer](https://github.com/pterodactyl-installer/pterodactyl-installer) — Original inspiration
-- [Calagopus](https://github.com/calagopus) — The awesome panel we're installing
-- All contributors making open-source better ✨
+- [pterodactyl-installer](https://github.com/pterodactyl-installer/pterodactyl-installer) - Original inspiration
+- [Calagopus](https://github.com/calagopus) - The panel this installer deploys
+- All contributors making open-source better
 
 ---
 
 <div align="center">
 
-**⭐ If you find this helpful, please consider starring the repo!**
+**If you find this helpful, please consider starring the repo!**
 
-[Report Issue](https://github.com/AnAverageBeing/calagopus-installer/issues) · [View Releases](https://github.com/AnAverageBeing/calagopus-installer/releases) · [Contributing](CONTRIBUTING.md)
+[Report Issue](https://github.com/AnAverageBeing/calagopus-installer/issues) - [View Releases](https://github.com/AnAverageBeing/calagopus-installer/releases) - [Contributing](CONTRIBUTING.md)
 
 </div>
+
+---
+
+## Donations
+
+Donations are appreciated!
+
+**Bitcoin:** `bc1qqdhanefhpfht66urta6yws03pc060gmz26k9dt`
