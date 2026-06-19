@@ -1,0 +1,22 @@
+# Calagopus Wings - Docker Compose stack (installer-managed).
+# Mirrors the upstream compose.local.yml shape.
+#
+# Tokens: ${WINGS_IMAGE}
+
+services:
+  wings:
+    image: ${WINGS_IMAGE}
+    volumes:
+      - ./config:/etc/calagopus/wings
+      - /var/lib/calagopus/wings/servers:/var/lib/calagopus/wings/servers
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "443:443"
+    restart: unless-stopped
+    networks:
+      - calagopus
+
+networks:
+  calagopus:
+    external: true
+    name: calagopus

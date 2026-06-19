@@ -1,0 +1,13 @@
+# Calagopus backup timer - installed by backup_install_schedule().
+# Rendered with: ${oncalendar}
+# (kept here for reference; backup/manager.sh writes the file directly)
+
+[Unit]
+Description=Calagopus periodic backup
+
+[Timer]
+OnCalendar=${oncalendar}
+Persistent=true
+
+[Install]
+WantedBy=timers.target

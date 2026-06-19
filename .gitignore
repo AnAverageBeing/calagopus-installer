@@ -1,0 +1,37 @@
+# Calagopus Installer - .gitignore
+
+# Local installer state / runtime artifacts (never commit)
+state/
+*.state
+*.lock
+
+# Backups produced while testing
+backups/
+*.bak
+*.tar.gz
+*.tgz
+
+# Editor / OS cruft
+*.swp
+*.swo
+*~
+.DS_Store
+.idea/
+.vscode/
+
+# Vagrant
+.vagrant/
+*-vagrant/
+
+# Test / coverage artefacts
+tests/.tmp/
+bats-results/
+coverage/
+
+# Credentials captured during local dev runs (must never be committed)
+.env
+.env.local
+secrets/
+*.pem
+*.key
+!templates/**/*

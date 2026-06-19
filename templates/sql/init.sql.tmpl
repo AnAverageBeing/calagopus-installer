@@ -1,0 +1,22 @@
+-- Calagopus database initialisation SQL (native install path).
+-- Creates the application role + database with secure defaults.
+-- The panel binary runs its own migrations on first start; this file only
+-- prepares the role/database so DATABASE_URL can connect.
+--
+-- Parameters substituted by the installer:
+--   ${DB_USER}  ${DB_NAME}  ${POSTGRES_PASSWORD}
+
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = '${DB_USER}') THEN
+    CREATE ROLE ${DB_USER} WITH LOGIN PASSWORD '${POSTGRES_PASSWORD}';
+  ELSE
+    ALTER ROLE ${DB_USER} WITH LOGIN PASSWORD '${POSTGRES_PASSWORD}';
+  END IF;
+END $$;
+
+SELECT 'CREATE DATABASE ${DB_NAME} OWNER ${DB_USER}'
+WHERE NOT EXISTS (SELECT 1 FROM pg_database WHERE datname = '${DB_NAME}')\gexec
+
+GRANT ALL PRIVILEGES ON DATABASE ${DB_NAME} TO ${DB_USER};
+ALTER DATABASE ${DB_NAME} OWNER TO ${DB_USER};

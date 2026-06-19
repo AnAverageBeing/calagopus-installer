@@ -1,0 +1,31 @@
+# Calagopus Panel - systemd unit (native binary install).
+# This is a fallback template; the panel binary's own `service-install`
+# generates the canonical unit. We keep this for repair/repair_panel_service
+# when the binary's installer is unavailable.
+#
+# Rendered with: ${CALAGOPUS_PANEL_BIN} ${CALAGOPUS_PANEL_ENV}
+
+[Unit]
+Description=Calagopus Panel
+After=network-online.target postgresql.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=calagopus
+Group=calagopus
+EnvironmentFile=${CALAGOPUS_PANEL_ENV}
+ExecStart=${CALAGOPUS_PANEL_BIN}
+Restart=on-failure
+RestartSec=5
+LimitNOFILE=4096
+
+# Hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/var/lib/calagopus /var/log/calagopus
+
+[Install]
+WantedBy=multi-user.target

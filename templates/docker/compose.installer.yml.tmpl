@@ -1,0 +1,59 @@
+# Calagopus Panel - minimal Docker Compose stack (installer-managed).
+# This is the installer's own stack shape, used when the upstream compose
+# files are unavailable or when the operator wants a predictable layout.
+# It mirrors the upstream compose.yml structure: panel + postgres + redis.
+#
+# Tokens substituted by the installer: ${PANEL_IMAGE} ${PANEL_PORT}
+# (env vars come from the generated .env file, not hardcoded here.)
+
+services:
+  panel:
+    image: ${PANEL_IMAGE}
+    env_file: .env
+    ports:
+      - "${PANEL_PORT}:8000"
+    volumes:
+      - panel-data:/var/lib/calagopus
+    depends_on:
+      - db
+      - cache
+    restart: unless-stopped
+    networks:
+      - calagopus
+
+  db:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - calagopus
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  cache:
+    image: valkey/valkey:8-alpine
+    restart: unless-stopped
+    networks:
+      - calagopus
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  panel-data:
+  db-data:
+
+networks:
+  calagopus:
+    external: true
+    name: calagopus

@@ -1,0 +1,37 @@
+# Calagopus Panel - Caddyfile reverse proxy.
+# Rendered by src/proxy/manager.sh with envsubst tokens:
+#   ${PANEL_FQDN}  ${SSL_CERT}  ${SSL_KEY}  ${UPSTREAM}
+#
+# If SSL_CERT/SSL_KEY are empty, Caddy handles TLS automatically via
+# Let's Encrypt / Zero SSL. When set, Caddy uses the provided certificate.
+
+{
+	# email ops@example.com  # uncomment + set for ACME account
+}
+
+${PANEL_FQDN} {
+	encode zstd gzip
+
+	# Security headers.
+	header {
+		X-Frame-Options "SAMEORIGIN"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+	}
+
+	# Use provided certificate if present.
+	tls ${SSL_CERT} ${SSL_KEY}
+
+	reverse_proxy ${UPSTREAM} {
+		header_up Host {host}
+		header_up X-Real-IP {remote_host}
+		header_up X-Forwarded-For {remote_host}
+		header_up X-Forwarded-Proto {scheme}
+		# WebSocket support is automatic in Caddy.
+		transport http {
+			read_timeout 300s
+			write_timeout 300s
+		}
+	}
+}

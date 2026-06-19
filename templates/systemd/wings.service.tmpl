@@ -1,0 +1,24 @@
+# Calagopus Wings - systemd unit (native binary install).
+# Fallback template used by repair when the binary's service-install is missing.
+#
+# Rendered with: ${CALAGOPUS_WINGS_BIN}
+
+[Unit]
+Description=Calagopus Wings
+After=network-online.target docker.service
+Wants=network-online.target docker.service
+
+[Service]
+Type=simple
+ExecStart=${CALAGOPUS_WINGS_BIN}
+Restart=on-failure
+RestartSec=5
+LimitNOFILE=1048576
+
+# Wings needs broad access to manage Docker containers + game server mounts,
+# so we keep hardening lighter than the panel.
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
