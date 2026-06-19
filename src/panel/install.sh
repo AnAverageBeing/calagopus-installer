@@ -47,7 +47,10 @@ panel_installed() {
 		|| [ -f "${CALAGOPUS_PANEL_DIR}/compose.yml" ]
 }
 panel_version() {
-	[ -x "$CALAGOPUS_PANEL_BIN" ] && "$CALAGOPUS_PANEL_BIN" version 2>/dev/null | head -1
+	[ -x "$CALAGOPUS_PANEL_BIN" ] || return 1
+	# The panel binary requires APP_ENCRYPTION_KEY to be set for any subcommand,
+	# including version. Provide a dummy one if the real one isn't available.
+	APP_ENCRYPTION_KEY="${CFG[APP_ENCRYPTION_KEY]:-dummy}" "$CALAGOPUS_PANEL_BIN" version 2>/dev/null | head -1
 }
 panel_health() {
 	common_unit_exists "$CALAGOPUS_PANEL_SERVICE" && systemctl is-active --quiet "$CALAGOPUS_PANEL_SERVICE" 2>/dev/null && return 0
@@ -138,28 +141,51 @@ panel_install_native() {
 		system_as_root install -m0755 /tmp/calagopus-panel "$CALAGOPUS_PANEL_BIN"
 		rm -f /tmp/calagopus-panel
 	fi
-	"$CALAGOPUS_PANEL_BIN" version >/dev/null 2>&1 || log_warn "panel binary present but 'version' failed"
+	# Verify the binary works (needs env loaded for version check).
+	set -a
+	# shellcheck source=/dev/null
+	. "$CALAGOPUS_PANEL_ENV"
+	set +a
+	if "$CALAGOPUS_PANEL_BIN" version 2>&1 | head -1 | grep -q .; then
+		log_ok "panel binary verified: $(panel_version)"
+	else
+		log_warn "panel binary present but version check failed"
+	fi
 
 	# Env file + config dir.
 	system_as_root install -d -m0750 "$CALAGOPUS_ETC_DIR"
 	panel_write_env_file "$CALAGOPUS_PANEL_ENV"
 	system_as_root chmod 0640 "$CALAGOPUS_PANEL_ENV"
 
+	# Reload env (file may have been regenerated).
+	set -a
+	# shellcheck source=/dev/null
+	. "$CALAGOPUS_PANEL_ENV"
+	set +a
+
 	# Register systemd service via the binary's own installer.
 	if [ "${CALAGOPUS_DRY_RUN:-0}" -eq 1 ]; then
 		log_info "[dry-run] would run: $CALAGOPUS_PANEL_BIN service-install"
 	else
-		set -a
-		# shellcheck source=/dev/null
-		. "$CALAGOPUS_PANEL_ENV"
-		set +a
-		"$CALAGOPUS_PANEL_BIN" service-install 2>&1 | tee -a "$CALAGOPUS_LOGFILE" >/dev/null || true
+		"$CALAGOPUS_PANEL_BIN" service-install 2>&1 | tee -a "$CALAGOPUS_LOGFILE" || true
 		system_as_root systemctl enable --now "$CALAGOPUS_PANEL_SERVICE" 2>/dev/null || true
 	fi
 
 	CFG[INSTALLED_PANEL_MODE]="native"
 	config_mark_installed PANEL
-	log_ok "panel installed (native) at http://localhost:${CFG[PANEL_PORT]}"
+
+	# Post-install summary.
+	ui_title "Panel Installation Complete"
+	printf '  %sBinary%s          %s\n' "$C_GREY" "$C_RESET" "$CALAGOPUS_PANEL_BIN"
+	printf '  %sConfig%s          %s\n' "$C_GREY" "$C_RESET" "$CALAGOPUS_PANEL_ENV"
+	printf '  %sService%s         %s.service\n' "$C_GREY" "$C_RESET" "$CALAGOPUS_PANEL_SERVICE"
+	printf '  %sURL%s             http://%s:%s\n' "$C_GREY" "$C_RESET" "${CFG[PANEL_FQDN]:-localhost}" "${CFG[PANEL_PORT]}"
+	printf '  %sDatabase%s        %s@%s:%s/%s\n' "$C_GREY" "$C_RESET" "${CFG[DB_USER]}" "${CFG[DB_HOST]}" "${CFG[DB_PORT]}" "${CFG[DB_NAME]}"
+	printf '\n'
+	printf '  %sNext steps:%s\n' "$C_BOLD" "$C_RESET"
+	printf '    systemctl status %s\n' "$CALAGOPUS_PANEL_SERVICE"
+	printf '    calagopus-installer status\n'
+	printf '\n'
 }
 
 # -----------------------------------------------------------------------------

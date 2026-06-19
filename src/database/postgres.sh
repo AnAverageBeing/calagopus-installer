@@ -117,22 +117,59 @@ db_provision() {
 }
 
 # Create the role and database on a local/existing server (idempotent).
+# Checks for existing role/db and asks the user how to handle conflicts.
 _create_role_and_db() {
 	local user="${CFG[DB_USER]}" db="${CFG[DB_NAME]}"
-	# DO NOT pass the password on the psql command line (visible in `ps aux`).
 	local sql
+
+	# Check if role already exists.
 	sql="SELECT 1 FROM pg_roles WHERE rolname='${user}'"
-	if ! db_local_psql "$sql" | grep -q 1; then
+	local role_exists=0
+	db_local_psql "$sql" 2>/dev/null | grep -q 1 && role_exists=1
+
+	# Check if database already exists.
+	sql="SELECT 1 FROM pg_database WHERE datname='${db}'"
+	local db_exists=0
+	db_local_psql "$sql" 2>/dev/null | grep -q 1 && db_exists=1
+
+	# If either exists, ask the user what to do.
+	if [ "$role_exists" = "1" ] || [ "$db_exists" = "1" ]; then
+		local conflict_msg=""
+		[ "$role_exists" = "1" ] && conflict_msg="role '${user}'"
+		[ "$db_exists" = "1" ] && conflict_msg="${conflict_msg:+${conflict_msg} and }database '${db}'"
+		ui_warn "${conflict_msg} already exists in PostgreSQL."
+		local pick
+		pick="$(ui_choice "How to handle the existing ${conflict_msg}?" \
+			"Drop and recreate (warning: data loss)|Keep existing and proceed (update password/owner only)" \
+			"2")"
+
+		if [ "${pick#Drop}" != "$pick" ]; then
+			# Drop and recreate.
+			if [ "$db_exists" = "1" ]; then
+				log_info "dropping existing database '${db}'"
+				db_local_psql "DROP DATABASE IF EXISTS ${db};" 2>/dev/null || true
+				db_exists=0
+			fi
+			if [ "$role_exists" = "1" ]; then
+				log_info "dropping existing role '${user}'"
+				db_local_psql "DROP ROLE IF EXISTS ${user};" 2>/dev/null || true
+				role_exists=0
+			fi
+		fi
+	fi
+
+	# Create role if it doesn't exist (or was dropped).
+	if [ "$role_exists" = "0" ]; then
 		log_info "creating database role '${user}'"
 		db_local_psql "CREATE ROLE ${user} WITH LOGIN PASSWORD '${CFG[POSTGRES_PASSWORD]}'" \
 			|| log_error "failed to create role ${user}"
 	else
 		log_debug "role '${user}' already exists"
-		# Ensure password matches what we generated/stored.
 		db_local_psql "ALTER ROLE ${user} WITH LOGIN PASSWORD '${CFG[POSTGRES_PASSWORD]}'" >/dev/null 2>&1 || true
 	fi
-	sql="SELECT 1 FROM pg_database WHERE datname='${db}'"
-	if ! db_local_psql "$sql" | grep -q 1; then
+
+	# Create database if it doesn't exist (or was dropped).
+	if [ "$db_exists" = "0" ]; then
 		log_info "creating database '${db}'"
 		db_local_psql "CREATE DATABASE ${db} OWNER ${user}" \
 			|| log_error "failed to create database ${db}"
