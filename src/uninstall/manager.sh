@@ -114,24 +114,32 @@ uninstall_docker_artifacts() {
 	fi
 
 	# Remove Calagopus docker images.
+	# Use a subshell + pipefail guard so grep returning 1 (no matches)
+	# doesn't trigger the ERR trap under set -o pipefail.
 	if [ "$UNINSTALL_REMOVE_DOCKER_IMAGES" = "1" ]; then
-		docker images --format '{{.Repository}}:{{.Tag}}' 2>/dev/null \
-			| grep -iE 'calagopus|ghcr.io/calagopus' \
-			| while read -r img; do
-				log_debug "removing docker image: $img"
-				docker rmi -f "$img" 2>/dev/null || true
-			done
+		(
+			set +e
+			docker images --format '{{.Repository}}:{{.Tag}}' 2>/dev/null \
+				| grep -iE 'calagopus|ghcr.io/calagopus' \
+				| while read -r img; do
+					log_debug "removing docker image: $img"
+					docker rmi -f "$img" 2>/dev/null || true
+				done
+		) || true
 	fi
 
 	# Remove the calagopus bridge network.
 	docker network rm "$CALAGOPUS_DOCKER_NETWORK" 2>/dev/null || true
 
 	# Clean up any dangling calagopus volumes.
-	docker volume ls --format '{{.Name}}' 2>/dev/null \
-		| grep -iE 'calagopus' \
-		| while read -r vol; do
-			docker volume rm "$vol" 2>/dev/null || true
-		done
+	(
+		set +e
+		docker volume ls --format '{{.Name}}' 2>/dev/null \
+			| grep -iE 'calagopus' \
+			| while read -r vol; do
+				docker volume rm "$vol" 2>/dev/null || true
+			done
+	) || true
 }
 
 # Remove native binaries.
