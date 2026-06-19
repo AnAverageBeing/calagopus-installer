@@ -53,22 +53,29 @@ ui_dim()      { printf ' %s%s%s\n' "$C_GREY" "$1" "$C_RESET"; }
 ui_banner() {
 	local ver="${CALAGOPUS_INSTALLER_VERSION:-?}"
 	printf '\n'
-	# Calagopus (white) + Installer (cyan) ASCII art.
-	# Using a heredoc with shellcheck disable for backtick literal chars.
+	# Calagopus (white)
+	printf '%s' "$C_BOLD$C_WHITE"
 	# shellcheck disable=SC2016
-	cat <<'ASCII'
+	cat <<'CALAGOPUS'
      ______      __                                  
    / ____/___ _/ /___ _____ _____  ____  __  _______ 
   / /   / __ `/ / __ `/ __ `/ __ \/ __ \/ / / / ___/ 
  / /___/ /_/ / / /_/ / /_/ / /_/ / /_/ / /_/ (__  )  
  \____/\__,_/_/\__,_/\__, /\____/ .___/\__,_/____/  
+CALAGOPUS
+	printf '%s\n' "$C_RESET"
+	# Installer (blue)
+	printf '%s' "$C_BOLD$C_BLUE"
+	# shellcheck disable=SC2016
+	cat <<'INSTALLER'
     ____           /____/    _/_/                   
    /  _/___  _____/ /_____ _/ / /__  _____          
    / // __ \/ ___/ __/ __ `/ / / _ \/ ___/          
  _/ // / / (__  ) /_/ /_/ / / /  __/ /              
 /___/_/ /_/____/\__/\__,_/_/_/\___/_/               
-ASCII
-	printf '\n %sv%s%s  %sPanel + Wings installer%s\n\n' "$C_GREY" "$ver" "$C_RESET" "$C_DIM" "$C_RESET"
+INSTALLER
+	printf '%s\n' "$C_RESET"
+	printf ' %sv%s%s  %sPanel + Wings installer%s\n\n' "$C_GREY" "$ver" "$C_RESET" "$C_DIM" "$C_RESET"
 }
 
 # -----------------------------------------------------------------------------
@@ -165,22 +172,22 @@ ui_main_menu() {
 		return 0
 	fi
 	ui_title "Main Menu"
-	printf '\n'
-	printf '  %s 1)%s Install Panel Only %s(without Docker)%s\n' "$C_CYAN" "$C_RESET" "$C_GREY" "$C_RESET"
-	printf '  %s 2)%s Install Panel+Wings %s(Full Stack)%s\n' "$C_CYAN" "$C_RESET" "$C_GREY" "$C_RESET"
-	printf '  %s 3)%s Install Panel Only %s(Docker)%s\n' "$C_CYAN" "$C_RESET" "$C_GREY" "$C_RESET"
-	printf '  %s 4)%s Install Wings Only\n' "$C_CYAN" "$C_RESET"
-	printf '\n'
-	printf '  %s 5)%s Upgrade Installation\n' "$C_CYAN" "$C_RESET"
-	printf '  %s 6)%s Repair Installation\n' "$C_CYAN" "$C_RESET"
-	printf '  %s 7)%s Backup Installation\n' "$C_CYAN" "$C_RESET"
-	printf '  %s 8)%s Restore Installation\n' "$C_CYAN" "$C_RESET"
-	printf '  %s 9)%s Reconfigure Installation\n' "$C_CYAN" "$C_RESET"
-	printf ' %s10)%s Remove Installation\n' "$C_CYAN" "$C_RESET"
-	printf ' %s11)%s Show System Status\n' "$C_CYAN" "$C_RESET"
-	printf '\n'
-	printf '  %s 0)%s Exit\n' "$C_GREY" "$C_RESET"
-	printf '\n'
+	printf '\n' >&2
+	printf '  %s 1)%s Install Panel Only %s(without Docker)%s\n' "$C_CYAN" "$C_RESET" "$C_GREY" "$C_RESET" >&2
+	printf '  %s 2)%s Install Panel+Wings %s(Full Stack)%s\n' "$C_CYAN" "$C_RESET" "$C_GREY" "$C_RESET" >&2
+	printf '  %s 3)%s Install Panel Only %s(Docker)%s\n' "$C_CYAN" "$C_RESET" "$C_GREY" "$C_RESET" >&2
+	printf '  %s 4)%s Install Wings Only\n' "$C_CYAN" "$C_RESET" >&2
+	printf '\n' >&2
+	printf '  %s 5)%s Upgrade Installation\n' "$C_CYAN" "$C_RESET" >&2
+	printf '  %s 6)%s Repair Installation\n' "$C_CYAN" "$C_RESET" >&2
+	printf '  %s 7)%s Backup Installation\n' "$C_CYAN" "$C_RESET" >&2
+	printf '  %s 8)%s Restore Installation\n' "$C_CYAN" "$C_RESET" >&2
+	printf '  %s 9)%s Reconfigure Installation\n' "$C_CYAN" "$C_RESET" >&2
+	printf ' %s10)%s Remove Installation\n' "$C_CYAN" "$C_RESET" >&2
+	printf ' %s11)%s Show System Status\n' "$C_CYAN" "$C_RESET" >&2
+	printf '\n' >&2
+	printf '  %s 0)%s Exit\n' "$C_GREY" "$C_RESET" >&2
+	printf '\n' >&2
 	local pick
 	printf ' %sSelect an option%s [1]: ' "$C_BOLD" "$C_RESET" >&2
 	read -r pick </dev/tty 2>/dev/null || pick="1"
