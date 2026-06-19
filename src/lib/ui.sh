@@ -146,28 +146,36 @@ ui_main_menu() {
 	fi
 	ui_title "What would you like to do?"
 	cat >&2 <<'MENU'
-  1) Install Panel
-  2) Install Wings
-  3) Install Full Stack (Panel + Wings)
-  4) Upgrade Installation
-  5) Repair Installation
-  6) Backup Installation
-  7) Restore Installation
-  8) Reconfigure Installation
-  9) Remove Installation
- 10) Show System Status
+  1) Install Panel Only (without Docker)
+  2) Install Panel+Wings (Full Stack)
+  3) Install Panel Only (Docker)
+  4) Install Wings Only
+  5) Upgrade Installation
+  6) Repair Installation
+  7) Backup Installation
+  8) Restore Installation
+  9) Reconfigure Installation
+ 10) Remove Installation
+ 11) Show System Status
   0) Exit
 MENU
 	local pick
 	printf 'Select an option [1]: ' >&2
 	read -r pick </dev/tty 2>/dev/null || pick="1"
 	case "${pick:-1}" in
-		1) action="install_panel" ;; 2) action="install_wings" ;;
-		3) action="install_full" ;;   4) action="upgrade" ;;
-		5) action="repair" ;;         6) action="backup" ;;
-		7) action="restore" ;;        8) action="reconfigure" ;;
-		9) action="remove" ;;         10) action="status" ;;
-		0) action="exit" ;;           *) action="install_panel" ;;
+		1) action="install_panel_native" ;;
+		2) action="install_full" ;;
+		3) action="install_panel_docker" ;;
+		4) action="install_wings" ;;
+		5) action="upgrade" ;;
+		6) action="repair" ;;
+		7) action="backup" ;;
+		8) action="restore" ;;
+		9) action="reconfigure" ;;
+		10) action="remove" ;;
+		11) action="status" ;;
+		0) action="exit" ;;
+		*) action="install_panel_native" ;;
 	esac
 	printf '%s' "$action"
 }

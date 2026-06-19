@@ -35,6 +35,9 @@ _source_all() {
 		# shellcheck source=/dev/null
 		. "${CALAGOPUS_ROOT}/src/lib/${f}.sh"
 	done
+	# Telemetry (opt-in, sends to Discord webhook).
+	# shellcheck source=/dev/null
+	. "${CALAGOPUS_ROOT}/src/lib/telemetry.sh"
 	# OS detection + family modules.
 	# shellcheck source=/dev/null
 	. "${CALAGOPUS_ROOT}/src/os/detect.sh"
@@ -76,7 +79,8 @@ Calagopus Installer
 Usage: installer.sh [options]
 
 Actions (pick one; default is interactive menu):
-  --action <a>          install|upgrade|repair|backup|restore|reconfigure|
+  --action <a>          install_panel_native|install_panel_docker|install_wings|
+                        install_full|upgrade|repair|backup|restore|reconfigure|
                         remove|status|doctor|logs
   --target <t>          panel|wings|full   (for install/reconfigure)
   --mode <m>            docker|native       (deployment mode)
@@ -136,25 +140,73 @@ install_cli_shim() {
 # -----------------------------------------------------------------------------
 # Action dispatchers
 # -----------------------------------------------------------------------------
-action_install_panel() {
+action_install_panel_native() {
+	CALAGOPUS_DEPLOY_MODE="native"
+	CFG[DEPLOY_MODE]="native"
+	CFG[INSTALL_TARGET]="panel"
 	dep_install_base
 	os_setup_pkg_facade
-	panel_install
+	_install_with_telemetry panel
+}
+
+action_install_panel_docker() {
+	CALAGOPUS_DEPLOY_MODE="docker"
+	CFG[DEPLOY_MODE]="docker"
+	CFG[INSTALL_TARGET]="panel"
+	dep_install_base
+	os_setup_pkg_facade
+	_install_with_telemetry panel
 }
 
 action_install_wings() {
+	CFG[INSTALL_TARGET]="wings"
 	dep_install_base
 	os_setup_pkg_facade
-	wings_install
+	_install_with_telemetry wings
 }
 
 action_install_full() {
+	CALAGOPUS_DEPLOY_MODE="docker"
+	CFG[DEPLOY_MODE]="docker"
+	CFG[INSTALL_TARGET]="full"
 	dep_install_base
 	os_setup_pkg_facade
-	panel_install
-	# Wings is bundled in the AIO docker image; only install separately for
-	# native or standalone-docker modes.
-	if ! wings_is_aio_bundled; then wings_install; fi
+	_install_with_telemetry full
+}
+
+# Shared wrapper: telemetry prompt -> show summary -> confirm -> install -> send telemetry.
+_install_with_telemetry() {
+	local target="$1"
+	telemetry_prompt
+	_install_show_summary "$target"
+	if ! ui_confirm "Proceed with installation?" "y"; then
+		log_info "installation cancelled by user"
+		exit 0
+	fi
+	case "$target" in
+		panel) panel_install ;;
+		wings) wings_install ;;
+		full)  panel_install; if ! wings_is_aio_bundled; then wings_install; fi ;;
+	esac
+	telemetry_send
+}
+
+# Show a summary of what will be installed before the user confirms.
+_install_show_summary() {
+	local target="$1"
+	ui_title "Installation Summary"
+	printf '  Deploy mode:   %s\n' "${CALAGOPUS_DEPLOY_MODE:-?}"
+	printf '  Target:        %s\n' "$target"
+	printf '  Channel:       %s\n' "${CALAGOPUS_RELEASE_CHANNEL:-?}"
+	printf '  OS:            %s %s (%s)\n' "${OS_ID:-?}" "${OS_VERSION_ID:-?}" "$(system_arch)"
+	if [ -n "${CFG[PANEL_FQDN]:-}" ]; then
+		printf '  Panel FQDN:    %s\n' "${CFG[PANEL_FQDN]}"
+	fi
+	if [ -n "${CFG[DB_HOST]:-}" ]; then
+		printf '  Database:      %s@%s:%s/%s\n' "${CFG[DB_USER]:-?}" "${CFG[DB_HOST]}" "${CFG[DB_PORT]:-5432}" "${CFG[DB_NAME]:-?}"
+	fi
+	printf '  Telemetry:     %s\n' "${CALAGOPUS_TELEMETRY_OPT_IN:-not asked}"
+	printf '\n'
 }
 
 action_reconfigure() {
@@ -170,19 +222,20 @@ dispatch_action() {
 		action="$(ui_main_menu)"
 	fi
 	case "$action" in
-		install_panel) action_install_panel ;;
-		install_wings) action_install_wings ;;
-		install_full)  CFG[INSTALL_TARGET]="full"; action_install_full ;;
-		upgrade)       update_all ;;
-		repair)        repair_run_all ;;
-		backup)        backup_create ;;
-		restore)       backup_restore "${CFG[RESTORE_BUNDLE]:-}" ;;
-		reconfigure)   action_reconfigure ;;
-		remove)        uninstall_run ;;
-		status)        monitoring_status ;;
-		doctor)        monitoring_doctor ;;
-		logs)          monitoring_logs ;;
-		exit|"")       log_info "exiting"; exit 0 ;;
+		install_panel_native) action_install_panel_native ;;
+		install_panel_docker) action_install_panel_docker ;;
+		install_wings)        action_install_wings ;;
+		install_full)         CFG[INSTALL_TARGET]="full"; action_install_full ;;
+		upgrade)              update_all ;;
+		repair)               repair_run_all ;;
+		backup)               backup_create ;;
+		restore)              backup_restore "${CFG[RESTORE_BUNDLE]:-}" ;;
+		reconfigure)          action_reconfigure ;;
+		remove)               uninstall_run ;;
+		status)               monitoring_status ;;
+		doctor)               monitoring_doctor ;;
+		logs)                 monitoring_logs ;;
+		exit|"")              log_info "exiting"; exit 0 ;;
 		*) log_error "unknown action: $action"; exit 1 ;;
 	esac
 }

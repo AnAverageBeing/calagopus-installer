@@ -115,10 +115,15 @@ bash <(curl -sSL https://raw.githubusercontent.com/AnAverageBeing/calagopus-inst
   --non-interactive --yes \
   --action install_full --target full --mode docker --channel stable
 
-# Panel only, native binary
+# Panel only, native binary (without Docker)
 bash <(curl -sSL https://raw.githubusercontent.com/AnAverageBeing/calagopus-installer/main/install.sh) -- \
   --non-interactive --yes \
-  --action install_panel --target panel --mode native --channel stable
+  --action install_panel_native --target panel --mode native --channel stable
+
+# Panel only, Docker
+bash <(curl -sSL https://raw.githubusercontent.com/AnAverageBeing/calagopus-installer/main/install.sh) -- \
+  --non-interactive --yes \
+  --action install_panel_docker --target panel --mode docker --channel stable
 
 # Wings only, Docker
 bash <(curl -sSL https://raw.githubusercontent.com/AnAverageBeing/calagopus-installer/main/install.sh) -- \
@@ -141,22 +146,35 @@ The interactive menu offers the following options:
 
 | # | Option | Description |
 |---|--------|-------------|
-| 1 | Install Panel | Deploy the Calagopus Panel (Docker or native) |
-| 2 | Install Wings | Deploy Calagopus Wings on a node |
-| 3 | Install Full Stack | Panel + Wings on a single host (AIO) |
-| 4 | Upgrade Installation | Upgrade to the latest release on your channel |
-| 5 | Repair Installation | Detect and fix common issues |
-| 6 | Backup Installation | Create a full backup bundle |
-| 7 | Restore Installation | Restore from a backup bundle |
-| 8 | Reconfigure Installation | Re-run config prompts and restart services |
-| 9 | Remove Installation | Uninstall Calagopus cleanly |
-| 10 | Show System Status | At-a-glance health overview |
+| 1 | Install Panel Only (without Docker) | Deploy the Calagopus Panel using native binaries + systemd |
+| 2 | Install Panel+Wings (Full Stack) | Panel + Wings on a single host via the AIO Docker image |
+| 3 | Install Panel Only (Docker) | Deploy the Calagopus Panel using Docker Compose |
+| 4 | Install Wings Only | Deploy Calagopus Wings on a node |
+| 5 | Upgrade Installation | Upgrade to the latest release on your channel |
+| 6 | Repair Installation | Detect and fix common issues |
+| 7 | Backup Installation | Create a full backup bundle |
+| 8 | Restore Installation | Restore from a backup bundle |
+| 9 | Reconfigure Installation | Re-run config prompts and restart services |
+| 10 | Remove Installation | Full clean uninstall (containers, files, configs, optionally DB) |
+| 11 | Show System Status | At-a-glance health overview |
+
+### Telemetry
+
+Before installation begins, the installer will ask if you'd like to send
+anonymous telemetry data to the maintainers. This helps with debugging,
+usage stats, and development.
+
+**What is sent:** Public IP, timestamp (UTC), OS, architecture, deploy mode, channel, installer version.
+
+**What is NOT sent:** No passwords, tokens, credentials, personal data, or database contents.
+
+This is entirely optional and opt-in. Saying no has zero impact on installation.
 
 ### CLI flags
 
 | Flag | Description |
 |------|-------------|
-| `--action <a>` | `install_panel`, `install_wings`, `install_full`, `upgrade`, `repair`, `backup`, `restore`, `reconfigure`, `remove`, `status`, `doctor`, `logs` |
+| `--action <a>` | `install_panel_native`, `install_panel_docker`, `install_wings`, `install_full`, `upgrade`, `repair`, `backup`, `restore`, `reconfigure`, `remove`, `status`, `doctor`, `logs` |
 | `--target <t>` | `panel`, `wings`, `full` |
 | `--mode <m>` | `docker`, `native` |
 | `--channel <c>` | `stable`, `beta`, `nightly` |
