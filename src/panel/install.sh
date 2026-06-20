@@ -64,25 +64,34 @@ panel_health() {
 # Gather user inputs that affect either deploy mode (FQDN, port, encryption key)
 # -----------------------------------------------------------------------------
 panel_gather() {
-	# FQDN: always ask in interactive mode (show current/stored value as default).
+	# FQDN: always ask in interactive mode. Don't show stored value as
+	# default - it's confusing when it's their actual domain name.
 	if [ "${CALAGOPUS_INTERACTIVE:-1}" -eq 1 ]; then
-		CFG[PANEL_FQDN]="$(ui_prompt_default "Panel FQDN (e.g. panel.example.com; blank to skip)" "${CFG[PANEL_FQDN]:-}")"
+		local fqdn_prompt="Panel FQDN (e.g. panel.example.com; blank to skip)"
+		CFG[PANEL_FQDN]="$(ui_prompt_default "$fqdn_prompt" "")"
 	fi
-	# Port: only ask when NOT using SSL (no FQDN or localhost).
-	# When SSL + reverse proxy is in play, the panel binds to its default
-	# port and the proxy handles 80/443.
-	local has_ssl_fqdn=0
+
+	# If user gave a real FQDN (not localhost/blank), ask about SSL.
+	# SSL = reverse proxy handles 80/443, panel stays on default port.
+	# Non-SSL = panel binds directly, so ask which port.
 	if [ -n "${CFG[PANEL_FQDN]:-}" ] && [ "${CFG[PANEL_FQDN]}" != "localhost" ]; then
-		has_ssl_fqdn=1
-	fi
-	if [ "$has_ssl_fqdn" = "0" ]; then
+		if [ "${CALAGOPUS_INTERACTIVE:-1}" -eq 1 ]; then
+			if ui_confirm "Set up HTTPS/SSL for ${CFG[PANEL_FQDN]}?" "y"; then
+				CFG[SETUP_SSL]="yes"
+				log_info "SSL will be configured; panel uses default port ${CALAGOPUS_PORTS[panel_http]} (reverse proxy handles 80/443)"
+			else
+				CFG[SETUP_SSL]="no"
+				# No SSL - ask what port to run on directly.
+				CFG[PANEL_PORT]="$(ui_prompt_default "Panel port (the panel will run directly on this port)" "${CALAGOPUS_PORTS[panel_http]}")"
+			fi
+		fi
+		CFG[PANEL_PORT]="${CFG[PANEL_PORT]:-${CALAGOPUS_PORTS[panel_http]}}"
+	else
+		# No FQDN or localhost - plain HTTP, ask for port.
+		CFG[PANEL_PORT]="${CFG[PANEL_PORT]:-${CALAGOPUS_PORTS[panel_http]}}"
 		if [ "${CALAGOPUS_INTERACTIVE:-1}" -eq 1 ] && [ -z "${CFG[PANEL_PORT]:-}" ]; then
 			CFG[PANEL_PORT]="$(ui_prompt_default "Panel port (this is where the panel will run)" "${CALAGOPUS_PORTS[panel_http]}")"
-		else
-			CFG[PANEL_PORT]="${CFG[PANEL_PORT]:-${CALAGOPUS_PORTS[panel_http]}}"
 		fi
-	else
-		CFG[PANEL_PORT]="${CFG[PANEL_PORT]:-${CALAGOPUS_PORTS[panel_http]}}"
 	fi
 
 	# Encryption key: generate if missing, never prompt for one (random is safer).
@@ -189,13 +198,13 @@ panel_install_native() {
 	CFG[INSTALLED_PANEL_MODE]="native"
 	config_mark_installed PANEL
 
-	# SSL + reverse proxy (only if FQDN is set).
-	if [ -n "${CFG[PANEL_FQDN]:-}" ] && [ "${CFG[PANEL_FQDN]}" != "localhost" ]; then
-		# Ask if user wants SSL + reverse proxy.
-		if ui_confirm "Set up SSL and reverse proxy (Nginx)?" "y"; then
-			ssl_provision 2>/dev/null || log_warn "SSL setup had issues"
-			proxy_setup 2>/dev/null || log_warn "reverse proxy setup had issues"
-		fi
+	# SSL + reverse proxy (only if user opted in during gather phase).
+	if common_is_yes "${CFG[SETUP_SSL]:-}"; then
+		ssl_provision 2>/dev/null || log_warn "SSL setup had issues"
+		proxy_setup 2>/dev/null || log_warn "reverse proxy setup had issues"
+	elif [ -n "${CFG[PANEL_FQDN]:-}" ] && [ "${CFG[PANEL_FQDN]}" != "localhost" ]; then
+		# FQDN was set but user declined SSL - they chose a custom port.
+		:
 	else
 		log_info "no FQDN set - skipping SSL and reverse proxy (panel will be on plain HTTP)"
 	fi
