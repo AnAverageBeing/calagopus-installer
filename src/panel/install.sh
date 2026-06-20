@@ -144,6 +144,11 @@ panel_install_native() {
 	db_provision
 	dep_provision redis
 
+	# Env file + config dir - create early so we can verify the binary.
+	system_as_root install -d -m0750 "$CALAGOPUS_ETC_DIR"
+	panel_write_env_file "$CALAGOPUS_PANEL_ENV"
+	system_as_root chmod 0640 "$CALAGOPUS_PANEL_ENV"
+
 	local url; url="$(panel_binary_url)"
 	log_info "downloading panel binary: $url"
 	system_as_root install -d -m0755 "$(dirname "$CALAGOPUS_PANEL_BIN")"
@@ -164,17 +169,6 @@ panel_install_native() {
 	else
 		log_warn "panel binary present but version check failed"
 	fi
-
-	# Env file + config dir.
-	system_as_root install -d -m0750 "$CALAGOPUS_ETC_DIR"
-	panel_write_env_file "$CALAGOPUS_PANEL_ENV"
-	system_as_root chmod 0640 "$CALAGOPUS_PANEL_ENV"
-
-	# Reload env (file may have been regenerated).
-	set -a
-	# shellcheck source=/dev/null
-	. "$CALAGOPUS_PANEL_ENV"
-	set +a
 
 	# Register systemd service via the binary's own installer.
 	if [ "${CALAGOPUS_DRY_RUN:-0}" -eq 1 ]; then
