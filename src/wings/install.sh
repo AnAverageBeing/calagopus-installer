@@ -21,7 +21,7 @@ CALAGOPUS_LIB_WINGS_INSTALL=1
 
 # In AIO mode wings is already in the panel container.
 wings_is_aio_bundled() {
-	[ "${CFG[INSTALLED_PANEL_MODE]:-}" = "docker" ] && [ "${CFG[INSTALL_TARGET]:-}" = "full" ]
+	if [ "${CFG[INSTALLED_PANEL_MODE]:-}" = "docker" ] && [ "${CFG[INSTALL_TARGET]:-}" = "full" ]; then return 0; else return 1; fi
 }
 
 wings_binary_url() {
@@ -39,7 +39,7 @@ wings_installed() {
 }
 wings_version() { [ -x "$CALAGOPUS_WINGS_BIN" ] && "$CALAGOPUS_WINGS_BIN" version 2>/dev/null | head -1; }
 wings_health() {
-	common_unit_exists "$CALAGOPUS_WINGS_SERVICE" && systemctl is-active --quiet "$CALAGOPUS_WINGS_SERVICE" 2>/dev/null && return 0
+	if common_unit_exists "$CALAGOPUS_WINGS_SERVICE" && systemctl is-active --quiet "$CALAGOPUS_WINGS_SERVICE" 2>/dev/null; then return 0; fi
 	if [ -f "${CALAGOPUS_WINGS_DIR}/compose.yml" ]; then
 		( cd "${CALAGOPUS_WINGS_DIR}" && docker compose ps --status=running 2>/dev/null | grep -q . )
 	fi
@@ -81,7 +81,7 @@ EOF
 # Docker deployment
 # -----------------------------------------------------------------------------
 wings_install_docker() {
-	wings_is_aio_bundled && { log_ok "wings is bundled in the AIO panel container; nothing to do"; return 0; }
+	if wings_is_aio_bundled; then { log_ok "wings is bundled in the AIO panel container; nothing to do"; return 0; } fi
 	dep_provision docker
 	docker_configure_daemon
 	docker_ensure_network
@@ -104,7 +104,7 @@ wings_install_docker() {
 # Native deployment
 # -----------------------------------------------------------------------------
 wings_install_native() {
-	wings_is_aio_bundled && { log_ok "wings is bundled in the AIO panel container; nothing to do"; return 0; }
+	if wings_is_aio_bundled; then { log_ok "wings is bundled in the AIO panel container; nothing to do"; return 0; } fi
 	dep_provision docker   # wings needs a container runtime regardless
 
 	local url; url="$(wings_binary_url)"

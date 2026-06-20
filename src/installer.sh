@@ -295,7 +295,7 @@ main() {
 	config_load
 
 	# Banner (interactive only).
-	[ "${CALAGOPUS_QUIET:-0}" -eq 0 ] && ui_banner
+	if [ "${CALAGOPUS_QUIET:-0}" -eq 0 ]; then ui_banner; fi
 
 	# OS detection + host validation.
 	os_detect

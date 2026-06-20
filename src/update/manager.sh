@@ -53,7 +53,7 @@ update_panel() {
 	if [ "${CFG[INSTALLED_PANEL_MODE]:-}" = "native" ]; then
 		local url; url="$(panel_binary_url)"
 		local old_bin="${CALAGOPUS_PANEL_BIN}.prev"
-		[ -x "$CALAGOPUS_PANEL_BIN" ] && system_as_root cp -a "$CALAGOPUS_PANEL_BIN" "$old_bin"
+		if [ -x "$CALAGOPUS_PANEL_BIN" ]; then system_as_root cp -a "$CALAGOPUS_PANEL_BIN" "$old_bin"; fi
 		curl -fsSL "$url" -o /tmp/calagopus-panel
 		system_as_root install -m0755 /tmp/calagopus-panel "$CALAGOPUS_PANEL_BIN"
 		rm -f /tmp/calagopus-panel
@@ -90,7 +90,7 @@ update_wings() {
 	if [ "${CFG[INSTALLED_WINGS_MODE]:-}" = "native" ]; then
 		local url; url="$(wings_binary_url)"
 		local old_bin="${CALAGOPUS_WINGS_BIN}.prev"
-		[ -x "$CALAGOPUS_WINGS_BIN" ] && system_as_root cp -a "$CALAGOPUS_WINGS_BIN" "$old_bin"
+		if [ -x "$CALAGOPUS_WINGS_BIN" ]; then system_as_root cp -a "$CALAGOPUS_WINGS_BIN" "$old_bin"; fi
 		curl -fsSL "$url" -o /tmp/wings
 		system_as_root install -m0755 /tmp/wings "$CALAGOPUS_WINGS_BIN"
 		rm -f /tmp/wings

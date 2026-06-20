@@ -98,7 +98,7 @@ config_get_default() { printf '%s' "${CFG[$1]:-$2}"; }
 # True if the named component is recorded as installed in state.
 config_is_installed() {
 	local comp="$1"
-	[ -n "${CFG["INSTALLED_${comp}"]:-}" ] && common_is_yes "${CFG["INSTALLED_${comp}"]}"
+	if [ -n "${CFG["INSTALLED_${comp}"]:-}" ]; then common_is_yes "${CFG["INSTALLED_${comp}"]}"; else return 1; fi
 }
 
 config_mark_installed() {

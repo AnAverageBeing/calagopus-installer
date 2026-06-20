@@ -27,7 +27,7 @@ panel_is_heavy() { common_is_yes "${CFG[VARIANT]:-}" || [ "${CFG[VARIANT]:-}" = 
 
 # Are we doing AIO? Only when target=full and deploy=docker on a single host.
 panel_is_aio() {
-	[ "${CFG[INSTALL_TARGET]:-}" = "full" ] && [ "${CALAGOPUS_DEPLOY_MODE:-docker}" = "docker" ]
+	if [ "${CFG[INSTALL_TARGET]:-}" = "full" ] && [ "${CALAGOPUS_DEPLOY_MODE:-docker}" = "docker" ]; then return 0; else return 1; fi
 }
 
 # Resolve the per-arch binary download URL for the chosen channel.
@@ -53,7 +53,7 @@ panel_version() {
 	APP_ENCRYPTION_KEY="${CFG[APP_ENCRYPTION_KEY]:-dummy}" "$CALAGOPUS_PANEL_BIN" version 2>/dev/null | head -1
 }
 panel_health() {
-	common_unit_exists "$CALAGOPUS_PANEL_SERVICE" && systemctl is-active --quiet "$CALAGOPUS_PANEL_SERVICE" 2>/dev/null && return 0
+	if common_unit_exists "$CALAGOPUS_PANEL_SERVICE" && systemctl is-active --quiet "$CALAGOPUS_PANEL_SERVICE" 2>/dev/null; then return 0; fi
 	# docker mode: check the container is up.
 	if [ -f "${CALAGOPUS_PANEL_DIR}/compose.yml" ]; then
 		( cd "${CALAGOPUS_PANEL_DIR}" && docker compose ps --status=running 2>/dev/null | grep -q . )
@@ -107,7 +107,7 @@ panel_install_docker() {
 	else
 		compose_key="panel_basic"
 	fi
-	panel_is_heavy && heavy=1
+	if panel_is_heavy; then heavy=1; fi
 	image="$(docker_resolve_image panel "${CALAGOPUS_RELEASE_CHANNEL}" "$heavy" "$aio")"
 	CFG[PANEL_IMAGE]="$image"
 

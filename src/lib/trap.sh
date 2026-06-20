@@ -29,13 +29,13 @@ trap_push() {
 # don't roll back successful work).
 trap_pop() {
 	local n=${#TRAP_CLEANUP_STACK[@]}
-	[ "$n" -gt 0 ] && unset 'TRAP_CLEANUP_STACK[n-1]'
+	if [ "$n" -gt 0 ]; then unset 'TRAP_CLEANUP_STACK[n-1]'; fi
 }
 
 # Run all registered cleanups in reverse order. Swallow individual failures so
 # one bad callback cannot prevent the rest from running.
 trap_run_cleanup() {
-	[ "${TRAP_ABORTING:-0}" -eq 1 ] && return 0
+	if [ "${TRAP_ABORTING:-0}" -eq 1 ]; then return 0; fi
 	TRAP_ABORTING=1
 	local i n=${#TRAP_CLEANUP_STACK[@]}
 	for ((i=n-1; i>=0; i--)); do
@@ -51,7 +51,7 @@ trap_run_cleanup() {
 # Backtrace helper (bash >= 4).
 trap_backtrace() {
 	local i=0 frame
-	[ -z "${BASH_VERSION:-}" ] && return 0
+	if [ -z "${BASH_VERSION:-}" ]; then return 0; fi
 	while caller "$i" 2>/dev/null | {
 		read -r line file func
 		printf '  #%d %s:%d %s\n' "$i" "${file:-?}" "${line:-0}" "${func:-main}"

@@ -41,8 +41,8 @@ backup_create() {
 	fi
 
 	# 3. Panel + wings dirs.
-	[ -d "$CALAGOPUS_PANEL_DIR" ] && system_as_root cp -a "$CALAGOPUS_PANEL_DIR" "${work}/panel"
-	[ -d "$CALAGOPUS_WINGS_DIR" ] && system_as_root cp -a "$CALAGOPUS_WINGS_DIR" "${work}/wings"
+	if [ -d "$CALAGOPUS_PANEL_DIR" ]; then system_as_root cp -a "$CALAGOPUS_PANEL_DIR" "${work}/panel"; fi
+	if [ -d "$CALAGOPUS_WINGS_DIR" ]; then system_as_root cp -a "$CALAGOPUS_WINGS_DIR" "${work}/wings"; fi
 
 	# 4. Manifest (no secrets - APP_ENCRYPTION_KEY etc. live inside the config
 	#    copy which is already 0600; the manifest itself records versions only).
@@ -107,8 +107,8 @@ backup_restore() {
 	config_load
 
 	# Restore panel + wings dirs.
-	[ -d "${work}/panel" ] && { system_as_root rm -rf "$CALAGOPUS_PANEL_DIR"; system_as_root cp -a "${work}/panel" "$CALAGOPUS_PANEL_DIR"; }
-	[ -d "${work}/wings" ] && { system_as_root rm -rf "$CALAGOPUS_WINGS_DIR"; system_as_root cp -a "${work}/wings" "$CALAGOPUS_WINGS_DIR"; }
+	if [ -d "${work}/panel" ]; then { system_as_root rm -rf "$CALAGOPUS_PANEL_DIR"; system_as_root cp -a "${work}/panel" "$CALAGOPUS_PANEL_DIR"; } fi
+	if [ -d "${work}/wings" ]; then { system_as_root rm -rf "$CALAGOPUS_WINGS_DIR"; system_as_root cp -a "${work}/wings" "$CALAGOPUS_WINGS_DIR"; } fi
 
 	# Restore database.
 	if [ -f "${work}/db.sql.gz" ] && config_is_installed DB; then
@@ -124,20 +124,20 @@ backup_restore() {
 backup_stop_services() {
 	system_as_root systemctl stop "$CALAGOPUS_PANEL_SERVICE" 2>/dev/null || true
 	system_as_root systemctl stop "$CALAGOPUS_WINGS_SERVICE" 2>/dev/null || true
-	[ -f "${CALAGOPUS_PANEL_DIR}/compose.yml" ] && docker_compose_down "$CALAGOPUS_PANEL_DIR"
-	[ -f "${CALAGOPUS_WINGS_DIR}/compose.yml" ] && docker_compose_down "$CALAGOPUS_WINGS_DIR"
+	if [ -f "${CALAGOPUS_PANEL_DIR}/compose.yml" ]; then docker_compose_down "$CALAGOPUS_PANEL_DIR"; fi
+	if [ -f "${CALAGOPUS_WINGS_DIR}/compose.yml" ]; then docker_compose_down "$CALAGOPUS_WINGS_DIR"; fi
 }
 
 backup_start_services() {
 	if [ "${CFG[INSTALLED_PANEL_MODE]:-}" = "native" ]; then
 		system_as_root systemctl start "$CALAGOPUS_PANEL_SERVICE" 2>/dev/null || true
 	else
-		[ -f "${CALAGOPUS_PANEL_DIR}/compose.yml" ] && docker_compose_up "$CALAGOPUS_PANEL_DIR"
+	if [ -f "${CALAGOPUS_PANEL_DIR}/compose.yml" ]; then docker_compose_up "$CALAGOPUS_PANEL_DIR"; fi
 	fi
 	if [ "${CFG[INSTALLED_WINGS_MODE]:-}" = "native" ]; then
 		system_as_root systemctl start "$CALAGOPUS_WINGS_SERVICE" 2>/dev/null || true
 	else
-		[ -f "${CALAGOPUS_WINGS_DIR}/compose.yml" ] && docker_compose_up "$CALAGOPUS_WINGS_DIR"
+	if [ -f "${CALAGOPUS_WINGS_DIR}/compose.yml" ]; then docker_compose_up "$CALAGOPUS_WINGS_DIR"; fi
 	fi
 }
 
